@@ -27,7 +27,7 @@ Consider a simple `Cities` table:
 | New York | US      | 8.4M       |
 | Seattle  | US      | 3.7M       |
 
-Now, let's run a query without an index: `SELECT \* FROM Cities WHERE Population = '3.7M'`
+Now, let's run a query without an index: `SELECT * FROM Cities WHERE Population = '3.7M'`
 
 - The Problem: To find the row, the database must potentially scan every single row in the table from top to bottom.
 - Time Complexity: This is an _O_(**n**) operation, where **_n_** is the number of rows. This is unacceptably slow for large tables (millions or billions of rows).
