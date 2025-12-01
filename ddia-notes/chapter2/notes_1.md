@@ -73,7 +73,7 @@ The JSON model offers advantages over the traditional multi-table relational sch
   - The relational approach requires either multiple queries or a complex multi-way join to fetch data scattered across tables.
 - Tree Structure: JSON explicitly represents the data's inherent tree structure.
 
-![one_to_many_json](./One-to-name-json.png)
+![one_to_many_json](./one-to-many-in-json.png)
 
 <br>
 
