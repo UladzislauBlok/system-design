@@ -137,3 +137,64 @@ Overall, the B-Tree is slower than a Hash Index for a single exact lookup (O(log
 <br>
 
 ##### LSM Tree + SSTable Index
+
+Log-Structured Merge-Tree (LSM-Tree)
+
+The LSM-Tree (Log-Structured Merge-Tree) and SSTable index is based on organizing data into levels, combining an in-memory component with immutable, sorted files on disk.
+
+The system is composed of two main parts:
+
+- LSM-Tree (In-Memory Component): This is a mutable, sorted data structure (often a self-balancing binary search tree or memtable) that holds the most recent writes backboned by WAL.
+- SSTable (Sorted String Table): When the in-memory component becomes sufficiently large, it is flushed to disk as a new, immutable, sorted file called an SSTable.
+
+![lsm_tree_sstable](./images/lsm_tree_sstable.png)
+
+When a read request comes in, the system prioritizes the most recent data:
+
+- Check LSM-Tree: The system first checks the in-memory LSM-Tree, which has an access complexity of O(logn).
+- Check SSTables: If the key is not found in the in-memory component, the system proceeds to check the SSTables on disk. It always starts with the most recent SSTable and works backward to ensure it does not accidentally retrieve a stale value.
+
+The overall read complexity is O(logn) for the in-memory structure plus a binary search on the SSTables, which is possible because SSTables are guaranteed to be sorted.
+
+Handling Updates and Deletes
+
+- Deletions: There is no actual deletion of data on the spot. Instead, a special marker called a "tombstone" is written to the LSM-Tree and subsequently flushed to the SSTables (similar to how Kafka marks messages for later removal).
+- Updates: Every time a key is updated, a new key-value pair is simply written to storage.
+
+To improve read performance and reduce disk I/O, two common optimizations are used:
+
+- Sparse Index: Instead of indexing every key in an SSTable, a small, secondary index is created by taking only certain keys and recording their precise disk location. This allows the system to quickly locate the start of the relevant data block and perform the binary search much faster.
+- Bloom Filter: This is a probabilistic data structure stored in memory. It provides the ability to definitively state that a key is NOT in a given SSTable. It has two possible responses:
+  - "Key is NOT in the table." (Highly accurate, no false negatives).
+  - "Key MAY BE in the table." (Possibility of false positives, which triggers an unnecessary disk read). This optimization helps avoid expensive disk I/O when the key is missing.
+
+Because every update and delete (as a tombstone) results in a new write to the storage system, the LSM-Tree can quickly consume large amounts of storage even if the user is only interested in the latest value.
+
+To eliminate this storage bloat and remove stale data, a background process called compaction runs:
+
+- Compaction involves merging two or more SSTables together.
+- When a key exists in multiple SSTables being merged, the new, merged SSTable will only keep the value from the most recent SSTable, discarding all older copies and any tombstone markers.
+
+| Characteristic   | Description                                                                                          | Key Implication                                                                             |
+| ---------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Structure        | Composed of a small, mutable in-memory structure (Memtable) and multiple, immutable SSTables on disk | Optimized for high write throughput (sequential disk writes)                                |
+| Storage Location | SSTables are disk-based but generated from memory, making the system highly durable                  | Enables handling of massive datasets without being limited by RAM size                      |
+| Read Performance | O(logn) (Logarithmic Time), requiring checks across the Memtable and multiple SSTables               | Reads are fast, but typically slower than B-Trees for a single point lookup                 |
+| Write Complexity | Low—writes are always sequential appends to the in-memory structure and disk files                   | Extremely high ingestion rate and low write amplification (initially)                       |
+| Key Ordering     | SSTables are guaranteed to be sorted                                                                 | Enables range queries and efficient block reads using a Sparse Index                        |
+| Data Redundancy  | High, as updates and deletes are new records/tombstones, leaving old versions                        | Requires a background Compaction process to merge SSTables and remove stale data/tombstones |
+| Optimizations    | Bloom Filters reduce disk I/O by preventing reads for missing keys                                   | Significantly improves read speed by avoiding unnecessary disk seeks                        |
+
+<br><br>
+
+### Summary
+
+| Feature             | Hash Index                                                  | B-Tree                                               | LSM-Tree (SSTables)                                                   |
+| ------------------- | ----------------------------------------------------------- | ---------------------------------------------------- | --------------------------------------------------------------------- |
+| Primary Goal        | Fastest single key lookup                                   | Balanced reads/writes, durability, and range queries | Fastest writes/ingestion and high scalability                         |
+| Read Complexity     | O(1) (Constant Time)                                        | O(logn) (Logarithmic Time)                           | O(logn) (Requires checking multiple components)                       |
+| Write Complexity    | Quick, but WAL is required for durability                   | Slower due to complex node splitting/rebalancing     | Fastest due to sequential appends to disk                             |
+| Range Queries       | No (data is random)                                         | Yes (data is sorted)                                 | Yes (SSTables are sorted)                                             |
+| Storage Location    | Keys often must be in RAM                                   | Fully disk-based (durable)                           | Disk-based (SSTables) but flushes from RAM (Memtable)                 |
+| Data Locality (I/O) | Poor (High Random I/O)                                      | Good (Low disk seeks, optimized for disk pages)      | Excellent Writes (Sequential), but reads can involve more disk checks |
+| Common Use          | Caching/key-value lookups where range queries aren't needed | Relational Databases (e.g., MySQL, PostgreSQL)       | NoSQL Databases (e.g., Cassandra, LevelDB, RocksDB)                   |
