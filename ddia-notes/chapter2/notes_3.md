@@ -215,3 +215,96 @@ If the same query can be written in 4 lines in one query language but requires 2
 <br>
 
 ### Triple-Stores and SPARQL
+
+The triple-store model is largely equivalent to the property graph model, differing mainly in terminology. However, it's worth understanding because various tools and languages exist for triple-stores that can enhance application development.
+
+In this model, all data is stored as simple three-part statements called triples:
+
+`(subject, predicate, object)`
+
+Example: `(Jim, likes, bananas)`
+
+- **_Jim_** is the subject.
+- **_likes_** is the predicate (the verb/relationship).
+- **_bananas_** is the object.
+
+The elements of a triple map to a graph as follows:
+
+- Subject: Always equivalent to a vertex (node) in the graph.
+- Object: Can be one of two things:
+  1. A primitive value (e.g., string, number):
+     - The (predicate, object) pair is equivalent to a property key and value on the subject vertex.
+     - Example: (lucy, age, 33) is like a vertex lucy with the property {"age":33}.
+  2. Another vertex in the graph:
+     - The predicate is equivalent to an edge (relationship) in the graph.
+     - The subject is the tail vertex, and the object is the head vertex.
+     - Example: (lucy, marriedTo, alain). Both lucy and alain are vertices, and marriedTo is the edge connecting them.
+
+The code below shows the same data as in example above, written as triples in a format called Turtle, a subset of Notation3 (N3):
+
+```
+@prefix : <urn:example:>.
+_:lucy a :Person.
+_:lucy :name "Lucy".
+_:lucy :bornIn _:idaho.
+_:idaho a :Location.
+_:idaho :name "Idaho".
+_:idaho :type "state".
+_:idaho :within _:usa.
+_:usa a :Location.
+_:usa :name "United States".
+_:usa :type "country".
+_:usa :within _:namerica.
+_:namerica a :Location.
+_:namerica :name "North America".
+_:namerica :type "continent".
+```
+
+In triple-store data formats (like Turtle), vertices are often represented using identifiers like \_:someName. These names are only locally significant within the file, ensuring that related triples refer to the same specific vertex.
+
+- When the predicate is an edge, the object is a vertex:
+  - Example: _:idaho :within _:usa
+- When the predicate is a property, the object is a string literal (value):
+  - Example: \_:usa :name "United States"
+
+To avoid repeating the subject for every triple, formats like Turtle allow you to use semicolons (;) to list multiple statements about the same subject, making the data more concise and readable.
+
+```
+  @prefix : <urn:example:>.
+_:lucy a :Person; :name "Lucy"; :bornIn _:idaho.
+_:idaho a :Location; :name "Idaho"; :type "state"; :within _:usa.
+_:usa a :Location; :name "United States"; :type "country"; :within _:namerica.
+_:namerica a :Location; :name "North America"; :type "continent".
+```
+
+_The SPARQL query language_
+
+SPARQL is a query language for triple-stores using the RDF data model. (It is an acronym for SPARQL Protocol and RDF Query Language, pronounced “sparkle.”) It predates Cypher, and since Cypher’s pattern matching is borrowed from SPARQL, they look quite similar.
+
+The same query as before—finding people who have moved from the US to Europe — is even more concise in SPARQL than it is in Cypher
+
+```
+PREFIX : <urn:example:>
+
+SELECT ?personName WHERE {
+  ?person :name ?personName.
+  ?person :bornIn / :within* / :name "United States".
+  ?person :livesIn / :within* / :name "Europe".
+}
+```
+
+The structure is very similar. The following two expressions are equivalent (variables start with a question mark in SPARQL):
+
+```
+(person) -[:BORN_IN]-> () -[:WITHIN*0..]-> (location) # Cypher
+
+?person :bornIn / :within* ?location. # SPARQL
+```
+
+In the following expression, the variable usa is bound to any vertex that has a name property whose value is the string "United States":
+
+```
+(usa {name:'United States'}) # Cypher
+
+?usa :name "United States". # SPARQL
+```
