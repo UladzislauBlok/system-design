@@ -4,3 +4,4 @@
 
 1. **CHAPTER 1:** Reliable, Scalable, and Maintainable Applications.
 2. **CHAPTER 2:** Data Models and Query Languages.
+3. **CHAPTER 3:** Storage and Retrieval
