@@ -3,7 +3,7 @@
 The most basic key-value store functions by appending every new write to the end of a text file (a log).
 
 - db_set (Writes): Extremely efficient. Because it only appends to the end of a file, it avoids the complexity of overwriting data.
-- db*get (Reads): Extremely inefficient. To find the latest value for a key, the database must scan the entire file from start to finish. This results in \*\*O(\_n*)\*\* complexity, meaning search time grows linearly with the amount of data.
+- db_get (Reads): Extremely inefficient. To find the latest value for a key, the database must scan the entire file from start to finish. This results in **O(_n_)** complexity, meaning search time grows linearly with the amount of data.
 
 ```
 #!/bin/bash
