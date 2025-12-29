@@ -50,7 +50,7 @@ Getting data from various sources into the warehouse involves Extract–Transfor
 - Transform: Clean the data and convert it into a schema optimized for analysis.
 - Load: Insert the processed data into the warehouse.
 
-![etl](./etl.png)
+![etl](./images/etl.png)
 
 While both systems often use SQL, their internal engines are diverging to meet specific needs:
 
@@ -91,7 +91,7 @@ _1. Star Schema_
 
 The name comes from the visual layout: a central fact table surrounded by dimension tables, like the rays of a star.
 
-![star_schema](./star_schema.png)
+![star_schema](./images/star_schema.png)
 
 _2. Snowflake Schema_
 

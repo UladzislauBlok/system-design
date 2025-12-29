@@ -137,7 +137,7 @@ Latency vs. Response Time
 
 Response time is not a single number but a distribution of values due to variations caused by factors like context switches, network retransmissions, garbage collection pauses, or page faults.
 
-![percentiles](./percentiles.png)
+![percentiles](./images/percentiles.png)
 
 The arithmetic mean (average) is a poor measure of "typical" performance as it hides how many users experienced a delay. Percentiles are better:
 

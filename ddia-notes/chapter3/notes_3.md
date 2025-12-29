@@ -29,7 +29,7 @@ GROUP BY
 
 This illustrates how data is physically arranged on disk in a columnar format versus traditional row-based formats:
 
-![column_model](./column_model.png)
+![column_model](./images/column_model.png)
 
 <br>
 
@@ -46,7 +46,7 @@ Column-oriented storage significantly improves disk throughput because repetitiv
 - Mechanism: A separate bitmap is created for each distinct value. Each bit represents a row: 1 if the row contains the value, 0 if it does not.
 - Sparsity & Run-Length Encoding (RLE): If a column has many distinct values, bitmaps become "sparse" (mostly zeros). These are further compressed using Run-Length Encoding to make the storage remarkably compact
 
-![bitmap](./bitmap.png)
+![bitmap](./images/bitmap.png)
 
 Bitmap indexes are ideal for common analytical filter queries:
 
@@ -120,4 +120,4 @@ A data cube is a specific type of materialized view that represents a multi-dime
 - The "Hypercube": In reality, facts have many dimensions (Date, Product, Store, Promotion, Customer). While a 5D cube is hard to visualize, the principle of pre-aggregating every combination remains the same.
 - Strategy: Most modern data warehouses maintain the raw data (in column stores) for flexibility and use data cubes only to accelerate specific, high-traffic queries.
 
-![data_cube](./data_cube.png)
+![data_cube](./images/data_cube.png)

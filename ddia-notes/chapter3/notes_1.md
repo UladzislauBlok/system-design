@@ -3,7 +3,7 @@
 The most basic key-value store functions by appending every new write to the end of a text file (a log).
 
 - db_set (Writes): Extremely efficient. Because it only appends to the end of a file, it avoids the complexity of overwriting data.
-- db_get (Reads): Extremely inefficient. To find the latest value for a key, the database must scan the entire file from start to finish. This results in **O(_n_)** complexity, meaning search time grows linearly with the amount of data.
+- db*get (Reads): Extremely inefficient. To find the latest value for a key, the database must scan the entire file from start to finish. This results in \*\*O(\_n*)\*\* complexity, meaning search time grows linearly with the amount of data.
 
 ```
 #!/bin/bash
@@ -46,7 +46,7 @@ The simplest indexing strategy for key-value stores is to keep a hash map in RAM
 - Reads: To find a value, you look up the key in the hash map, jump to the specific offset on disk (a "disk seek"), and read the value.
 - Constraint: This approach requires all keys to fit in RAM. However, the values can be much larger than RAM because they stay on disk until needed.
 
-![hash_map](./hash_map.png)
+![hash_map](./images/hash_map.png)
 
 Since an append-only log grows indefinitely, the database must reclaim space. This is handled through Segmentation and Compaction.
 
@@ -59,7 +59,7 @@ During compaction, multiple segments can be merged into a single, smaller segmen
 - Background Processing: Merging happens in a background thread, so it doesn't block incoming reads or writes.
 - Switching: Once a new merged segment is ready, the system swaps the old segments for the new one and deletes the old files.
 
-![compaction](./segment_compaction.png)
+![compaction](./images/segment_compaction.png)
 
 When the database is split into multiple segments, the lookup process changes slightly:
 
@@ -104,7 +104,7 @@ Merging SSTable segments is highly efficient, even when the files are much large
 - Handling Duplicates: Because segments are created at different times, one segment is always "more recent" than another. If the same key appears in multiple segments, the value from the most recent segment is kept, and the older values are discarded.
 - Result: You produce a single, new merged segment file that remains perfectly sorted.
 
-![merge_sstable](./merge_sstable.png)
+![merge_sstable](./images/merge_sstable.png)
 
 Unlike a hash index, which requires an entry for every key in memory, SSTables allow for a sparse index.
 
@@ -116,7 +116,7 @@ Because read requests often scan through a small range of keys anyway, the stora
 - Index Pointers: Each entry in your sparse in-memory index then points to the start of one of these compressed blocks.
 - Benefits: This significantly reduces disk space usage and, more importantly, reduces the I/O bandwidth required to read data from the disk.
 
-![sparse_index](./sparse_index.png)
+![sparse_index](./images/sparse_index.png)
 
 While maintaining a sorted structure on disk is possible, it is much easier to do in memory. By using well-known tree data structures like red-black trees or AVL trees, we can insert keys in any order and still read them back in sorted order.
 
@@ -190,9 +190,9 @@ B-trees are updated by overwriting pages directly on disk rather than appending 
 
 This algorithm ensures the tree remains balanced with a depth of O(logn). Most databases require only three or four levels; for example, a four-level tree with a branching factor of 500 can store up to 256 TB, meaning you only need to follow a few references to find any specific key.
 
-![b_tree_lookup](./b_tree_lookup.png)
+![b_tree_lookup](./images/b_tree_lookup.png)
 
-![b_tree_split](./b_tree_split.png)
+![b_tree_split](./images/b_tree_split.png)
 
 The fundamental write operation of a B-tree involves overwriting a page on disk with new data. Unlike log-structured indexes (like LSM-trees) which only append to files, B-trees modify data in place, assuming the page's physical location remains constant so that references to it stay valid. On a hardware level, this involves moving a disk head to a specific sector on a spinning platter or, in the case of SSDs, performing a complex erase-and-rewrite cycle on storage blocks.
 

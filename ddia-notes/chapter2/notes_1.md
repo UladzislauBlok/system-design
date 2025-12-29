@@ -37,7 +37,7 @@ However, since users typically have multiple positions, education periods, and p
 - Modern SQL Features: Use structured datatypes, XML, or JSON datatypes (supported by Oracle, DB2, PostgreSQL, MySQL, etc.) to store multi-valued data within a single row, allowing for querying and indexing inside the structured data.
 - Application-Handled Encoding: Encode the multi-valued data as JSON or XML and store it in a simple text column. In this case, the application is responsible for interpreting the structure, and the database cannot typically query the internal values.
 
-![CV_SQL](./CV_SQL.png)
+![CV_SQL](./images/CV_SQL.png)
 
 For a data structure like a CV, which is mostly a self-contained document, a JSON representation can be quite appropriate. JSON has the appeal of being much simpler than XML. Document-oriented databases like MongoDB, RethinkDB, CouchDB, and Espresso support this data model.
 
@@ -73,7 +73,7 @@ The JSON model offers advantages over the traditional multi-table relational sch
   - The relational approach requires either multiple queries or a complex multi-way join to fetch data scattered across tables.
 - Tree Structure: JSON explicitly represents the data's inherent tree structure.
 
-![one_to_many_json](./one-to-many-in-json.png)
+![one_to_many_json](./images/one-to-many-in-json.png)
 
 <br>
 

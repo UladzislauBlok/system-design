@@ -45,7 +45,7 @@ Each edge consists of:
 - A label to describe the kind of relationship between the two vertices
 - A collection of properties (key-value pairs)
 
-![graph-db](./graph-structured-data.png)
+![graph-db](./images/graph-structured-data.png)
 
 Representing a property graph using a relational schema:
 
