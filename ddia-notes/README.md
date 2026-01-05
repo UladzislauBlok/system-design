@@ -6,3 +6,4 @@
 2. **CHAPTER 2:** Data Models and Query Languages.
 3. **CHAPTER 3:** Storage and Retrieval
 4. **CHAPTER 4:** Encoding and Evolution
+5. **CHAPTER 5:** Replication
