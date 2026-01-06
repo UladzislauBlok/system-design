@@ -40,7 +40,7 @@ There are three common technical approaches to moving data from the primary node
 
 The primary node logs every write request (e.g., SQL INSERT or UPDATE statements) and sends those commands to the replicas to be re-executed.
 
-- Issue: Non-deterministic functions. Commands like NOW() or RAND() will produce different results on different servers, leading to data divergence between the primary and the replicas.
+- Issue: Non-deterministic functions. Commands like `NOW()` or `RAND()` will produce different results on different servers, leading to data divergence between the primary and the replicas.
 
 **2. Write-Ahead Log (WAL) Shipping**
 

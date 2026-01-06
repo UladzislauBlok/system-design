@@ -53,3 +53,51 @@ To solve these problems, we cannot rely on a single node's "opinion." We need Di
 - Quorums: Instead of one node deciding who is leader, a majority of nodes (e.g., 3 out of 5) must agree on who the leader is.
 - Consensus Algorithms: Tools like Paxos or Raft are used to ensure that even in the face of network failures, the cluster agrees on a single "Source of Truth."
 - Fencing Tokens: To prevent "Split Brain," every time a new leader is elected, it receives a higher term number (or epoch). If the old leader tries to write to storage, the system checks the token and rejects the write because its "term" is expired.
+
+<br>
+
+---
+
+<br>
+
+### Multi Leader Replication
+
+In this architecture, multiple nodes act as leaders. This is typically used in Multi-Data Center setups to ensure that if an entire region (like US-East) goes dark, the application can still process writes in another region (like EU-West).
+Topology Types
+
+How nodes communicate with each other determines the system's resilience:
+
+- **Circular Topology**: Nodes are connected in a ring clockwise.
+  - Risk: If one node fails, it breaks the replication chain for the entire ring unless there is a bypass mechanism.
+- **Star Topology**: A central "hub" node redistributes writes to "spoke" nodes.
+  - Risk: The hub is a single point of failure. If it goes down, the spoke nodes cannot sync.
+- **All-to-All Topology**: Every leader sends its writes to every other leader.
+  - Advantage: Most resilient to node failure.
+  - Risk (Causality): Writes can arrive out of order. For example, an `UPDATE` might arrive at a node before the `INSERT` for that same row due to network fluctuations.
+
+##### The Core Challenge: Write Conflicts
+
+The biggest drawback of Multi-Leader is that two users can update the same piece of data on different leaders at the exact same time.
+
+**1. Conflict Avoidance**
+
+The simplest "solution" is to ensure that all writes for a specific record (e.g., a specific User ID) are always routed to the same leader.
+
+- Trade-off: This effectively turns the system back into a Single-Leader model for that specific user, losing some of the "write anywhere" flexibility.
+
+**2. Conflict Resolution: Last Write Wins (LWW)**
+
+When two writes conflict, the system picks the "latest" one based on a timestamp and discards the other.
+
+The Clock Problem: Physical clocks (Time-of-Day clocks) are not reliable.
+
+- Clock Skew: Two servers will always have slightly different times. Even with NTP (Network Time Protocol), synchronization happens over an unreliable network, meaning one server might think it is 10:00:01 while the other thinks it is 10:00:02.
+- Risk: A "later" write (in real-world time) could be deleted because a server with a "slow" clock assigned it an older timestamp. This leads to silent data loss
+
+<br>
+
+---
+
+<br>
+
+### Leaderless Replication
