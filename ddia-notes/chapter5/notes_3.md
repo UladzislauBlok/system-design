@@ -1,4 +1,4 @@
-# Chapter 5.2 Replication: Multi-Leader Replication
+# Chapter 5.3 Replication: Multi-Leader Replication
 
 In a multi-leader configuration (also known as active/active or master–master replication), multiple nodes are permitted to accept write requests. Each node that processes a write forwards that data change to all other nodes in the system. In this architecture, every leader simultaneously functions as a follower to the other leaders.
 
