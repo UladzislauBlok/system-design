@@ -91,4 +91,74 @@ Measuring how far a replica has fallen behind is more complex in leaderless syst
 
 <br>
 
-###
+### Sloppy Quorums and Hinted Handoff
+
+In a large cluster, network partitions may prevent a client from connecting to the specific n nodes assigned to a piece of data. Sloppy Quorums and Hinted Handoff are mechanisms designed to prioritize write availability over strict consistency in these scenarios.
+
+_Sloppy Quorums_
+
+A Sloppy Quorum occurs when the system accepts writes even if the designated "home" nodes are unreachable. Instead of failing, the system writes the data to reachable nodes that are not among the original n replicas.
+
+- Benefit: Increases write availability; as long as any w nodes are reachable, the write succeeds.
+- Trade-off: It breaks the quorum guarantee (w+r>n). Since the data is stored on "temporary" nodes, a subsequent read of the r "home" nodes will not see the latest value until it is transferred back.
+- Purpose: It is an assurance of durability (the data is safely stored somewhere) rather than a guarantee of immediate consistency.
+
+_Hinted Handoff_
+
+Once the network interruption is resolved or the "home" nodes return online, the temporary nodes deliver the missed writes to the correct locations. This process is called Hinted Handoff.
+
+**Multi-Datacenter Operation**
+
+Leaderless replication is well-suited for multi-datacenter setups because it naturally handles high latency and network interruptions.
+
+- Local Quorums: To maintain low latency, clients usually send writes to all replicas across all datacenters but only wait for a quorum of acknowledgments (w) from their local datacenter.
+- Asynchronous Cross-DC Replication: Writes to remote datacenters typically happen asynchronously. This ensures that a failure in the cross-datacenter link does not block local operations.
+
+<br>
+
+---
+
+<br>
+
+### Detecting Concurrent Writes
+
+In leaderless replication, concurrent writes occur when multiple clients write to the same key simultaneously. Because nodes may receive these writes in different orders due to network latency or partial failures, the replicas must have a mechanism to converge toward the same value to achieve eventual consistency.
+
+![concurrent_writes](./images/concurrent_writes.png)
+
+**Last Write Wins (LWW)**
+
+One method for achieving convergence is Last Write Wins, where the system attaches a timestamp to every write and keeps only the most "recent" one, discarding others.
+
+- Pros: Simple and ensures all replicas eventually store the same value.
+- Cons: High risk of data loss, as concurrent (and sometimes non-concurrent) writes are silently dropped.
+- Best Practice: LWW is only truly safe if keys are immutable (e.g., using a UUID for every write) so that concurrent updates to the same key never occur.
+
+**The "Happens-Before" Relationship**
+
+To manage conflicts without losing data, we must define Concurrency: two operations are concurrent if neither "knows" about the other. If one operation builds upon another, we say the first happens before the second (a causal dependency).
+
+The versioning algorithm for capturing dependencies works as follows:
+
+1. The server maintains a version number for every key, incrementing it with each write.
+2. Clients must read a key before writing to obtain the current version number and values.
+3. When writing, the client sends the new value along with the version number from the prior read.
+4. The server overwrites all values with that version number or lower (as they have been merged) but keeps any values with higher version numbers, as those represent concurrent writes.
+
+![capturing_causal_dependencies](./images/capturing_causal_dependencies.png)
+
+![graph_causal_dependencies](./images/graph_causal_dependencies.png)
+
+**Merging Siblings and Deletions**
+
+When the server detects concurrent writes, it stores them as siblings. It is then the client's responsibility to merge these values (e.g., taking a union of items in a shopping cart).
+
+- Tombstones: To support deletions during a merge, the system cannot simply remove an item; it must leave a "tombstone" (a deletion marker) to ensure the item doesn't reappear when merging with a sibling that hasn't seen the deletion.
+- CRDTs: Conflict-free Replicated Data Types are specialized data structures (like those used in Riak) that can automatically merge siblings and handle deletions correctly without complex application-level logic.
+
+**Version Vectors**
+
+In a multi-replica leaderless cluster, a single version number is insufficient. Instead, the system uses a Version Vector: a collection of version numbers, one for every replica.
+
+- Function: Each replica increments its own version during a write and tracks the versions it has seen from others.
+- Goal: This allows the database to distinguish between causal overwrites and true concurrent writes across different nodes, ensuring that no data is lost even if a client reads from one replica and writes back to another
