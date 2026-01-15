@@ -185,7 +185,48 @@ Summary of differences:
 | Feature    | Read Repair                                  | Anti-Entropy (Merkle Trees)                   |
 | ---------- | -------------------------------------------- | --------------------------------------------- |
 | Trigger    | Triggered by a read request.                 | Periodic background process.                  |
-| Efficiency | Only repairs data that is actually accessed. | "Repairs all data, including ""cold"" data."  |
+| Efficiency | Only repairs data that is actually accessed. | Repairs all data, including cold data.        |
 | Overhead   | Minimal background impact.                   | Requires CPU/Disk to compute/maintain hashes. |
 
-#### Quorums
+#### Quorums and Availability
+
+In leaderless systems, we rely on the Quorum strategy to ensure that reads can "see" the most recent writes without needing every node to be online.
+
+**1. The Quorum Rule**
+
+To ensure a read request observes the latest write, we follow the formula: `W + R > N`
+
+- `N`: The number of replicas (Replication Factor).
+- `W`: The number of nodes that must acknowledge a write for it to be successful.
+- `R`: The number of nodes we must query during a read.
+
+Why it works: If `W + R > N`, then according to the pigeonhole principle, there must be at least one node that is a member of both the write set and the read set. This "overlap" node guarantees that the reader sees the latest version
+
+**2. Quorum != Linearizability**
+
+While Quorums provide eventual consistency, they do not guarantee linearizability (the appearance that there is only one copy of the data and all operations are instantaneous).
+
+_Example of a Consistency Gap:_
+
+- A writer sends a write to two nodes. Both writes succeed on the nodes' disks.
+- However, due to a network glitch, the writer does not receive the acknowledgments and considers the write failed.
+- Simultaneously, a reader queries the nodes. Because the data was actually written, the reader sees the "new" value.
+- Conflict: From the writer’s perspective, the operation failed; from the reader's perspective, it succeeded. This inconsistency proves the system is not linearizable.
+
+**3. Sloppy Quorums**
+
+In a strict quorum, if you cannot reach W or R nodes from the "standard" set of N replicas, the operation fails. To increase availability, we can use a Sloppy Quorum.
+
+- The Idea: If the N nodes designated to handle a specific key are unavailable, the system "extends" its search and writes to other nodes in the cluster that are not the standard handlers for that key.
+- Trade-off: This improves write availability (you can almost always write somewhere), but it weakens consistency because the W and R nodes may no longer overlap.
+
+**4. Hinted Handoff**
+
+When a "sloppy" node accepts a write because the intended node was down, it needs a way to return that data to the rightful owner once it comes back online.
+
+- The Process:
+  - Node A (the intended owner) is down
+  - Node D accepts the write as a "hint"
+  - Node D stores this write in a separate local area
+  - Node D monitors Node A. Once Node A is reachable, Node D "hands off" the data to Node A.
+- Goal: To ensure that once the network partition is healed, the N intended replicas eventually contain the correct data.
