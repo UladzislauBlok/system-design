@@ -101,3 +101,91 @@ The Clock Problem: Physical clocks (Time-of-Day clocks) are not reliable.
 <br>
 
 ### Leaderless Replication
+
+In Leaderless Replication (used by systems like Cassandra and Riak), there is no designated "primary" node. Clients send write and read requests to multiple nodes (or a coordinator node sends them on the client's behalf).
+Core Concept: Quorums
+
+- Write: A client sends a write to n replicas. If a node is down, the write still succeeds if a minimum number of nodes (a quorum) acknowledge it.
+- Read: A client reads from multiple nodes to ensure they get the latest version. If different values are returned, the client uses Version Vectors or Timestamps to determine which is the most recent.
+
+**Maintaining Consistency**
+
+Since nodes can miss writes due to network partitions or downtime, the system must eventually bring them back in sync. There are two primary techniques:
+
+1. Read Repair
+
+When a client reads from several nodes and notices that one node has a stale (outdated) value, the client (or the coordinator) writes the newer value back to the stale node. - Best for: Data that is frequently read.
+
+2. Anti-Entropy with Merkle Trees
+
+This is a background process where nodes compare their data to find differences. Sending an entire database over the network to check for differences is too expensive, so we use Merkle Trees (Hash Trees).
+
+How Merkle Trees Work:
+
+- Bottom Layer (Leaves): Hash the individual values (e.g., `a = 10 -> 746`).
+- Middle Layers: Combine the hashes of children and hash the result.
+- Root: A single hash representing the entire state of that data range.
+
+```
+    a = 10 ---> 762 |
+                    | ---> f(889)  ---> 524 |
+    b = 45 ---> 127 |                       |
+                                            | ---> f(1200) ---> 213
+    c = 63 ---> 901 |                       |
+                    | ---> f(1339) ---> 626 |
+    d = 7  ---> 438 |
+
+    Take hash of    | sum up and take hash  | sum up and take hash
+    each row        |                       |
+
+```
+
+_Identifying the Conflict_
+
+To find which data is out of sync, two nodes compare their Merkle Tree roots. If the roots differ, they check the children:
+
+```
+          305
+         /   \
+        /     \
+       /       \
+     119       463
+     / \       /  \
+    /   \     /    \
+  746   821  784   949
+ a=10   b=6  c=2   d=4
+
+          vs
+
+          642
+         /   \
+        /     \
+       /       \
+     505       463
+     / \       /  \
+    /   \     /    \
+  746   314  784   949
+ a=10   b=9  c=2   d=4
+
+```
+
+The Comparison Process:
+
+- Compare Roots: `305` vs `642`. They differ.
+- Compare Left Branch: `119` vs `505`. They differ.
+- Compare Right Branch: `463` vs `463`. They are identical! We don't need to look at c or d.
+- Narrow down Left Branch: Check children of the left branch.
+  - `746` vs `746`: Match (Value a is fine).
+  - `821` vs `314`: Mismatch!
+
+Result: The system identifies that only the value for b needs to be synchronized. This significantly reduces the amount of data sent over the network.
+
+Summary of differences:
+
+| Feature    | Read Repair                                  | Anti-Entropy (Merkle Trees)                   |
+| ---------- | -------------------------------------------- | --------------------------------------------- |
+| Trigger    | Triggered by a read request.                 | Periodic background process.                  |
+| Efficiency | Only repairs data that is actually accessed. | "Repairs all data, including ""cold"" data."  |
+| Overhead   | Minimal background impact.                   | Requires CPU/Disk to compute/maintain hashes. |
+
+#### Quorums
