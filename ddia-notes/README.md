@@ -7,3 +7,4 @@
 3. **CHAPTER 3:** Storage and Retrieval
 4. **CHAPTER 4:** Encoding and Evolution
 5. **CHAPTER 5:** Replication
+6. **CHAPTER 6:** Partitioning
