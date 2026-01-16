@@ -1,7 +1,5 @@
 # Chapter 6.2 Partitioning: Partitioning and Secondary Indexes
 
-Partitioning and Secondary Indexes
-
 While partitioning by primary key is straightforward, secondary indexes—which allow searching by non-unique attributes like color or owner—do not map neatly to partitions. These indexes are essential for most data models but introduce significant architectural complexity. There are two primary strategies for handling them: document-based and term-based partitioning.
 
 **Partitioning Secondary Indexes by Document**
