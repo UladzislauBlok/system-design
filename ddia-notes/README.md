@@ -8,3 +8,4 @@
 4. **CHAPTER 4:** Encoding and Evolution
 5. **CHAPTER 5:** Replication
 6. **CHAPTER 6:** Partitioning
+7. **CHAPTER 7:** Transactions
