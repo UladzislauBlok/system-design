@@ -1,4 +1,4 @@
-# Chapter 7.1 Transactions: Weak Isolation Levels
+# Chapter 7.2 Transactions: Weak Isolation Levels
 
 Concurrency issues, or race conditions, arise when multiple transactions attempt to access or modify the same data simultaneously. These bugs are notoriously difficult to find because they are timing-dependent and often impossible to reproduce in testing. While serializable isolation theoretically eliminates these issues by making transactions appear to run one at a time, it carries a heavy performance penalty.
 
