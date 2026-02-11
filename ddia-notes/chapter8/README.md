@@ -1,0 +1,14 @@
+# Chapter 8 The Trouble with Distributed Systems
+
+**Topics:**
+
+1. Faults and Partial Failures -> [ref](./notes_1.md)
+   - Cloud Computing and Supercomputing
+
+2. Unreliable Networks -> [ref](./notes_2.md)
+    - Network Faults in Practice
+    - Detecting Faults
+    - Timeouts and Unbounded Delays
+    - Synchronous Versus Asynchronous Networks
+
+3. 
