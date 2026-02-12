@@ -9,16 +9,16 @@
 - Request: The coordinator sends a `PREPARE` message to all participants.
 - Validation: Each node checks if it can safely commit (validates data, acquires necessary locks, and writes data to a temporary workspace).
 - Vote:
-    - If a node is ready, it responds `YES`. This is a binding promise to commit later.
-    - If any node says `NO` or fails to respond, the coordinator sends an `ABORT` to everyone.
+  - If a node is ready, it responds `YES`. This is a binding promise to commit later.
+  - If any node says `NO` or fails to respond, the coordinator sends an `ABORT` to everyone.
 
 **Phase 2: The Commit Phase (Execution)**
 
 - The Point of No Return: If all participants voted `YES`, the coordinator writes the `COMMIT` decision to its disk-based transaction log.
 - Commit Command: The coordinator sends the `COMMIT` message to all nodes.
 - Indefinite Retries: If a participant node is down or a network packet is lost during this phase, the coordinator must retry the commit indefinitely.
-    - No Rollback: Once the coordinator decides to commit, it cannot change its mind.
-    - Recovery: If a participant was down, it must commit the transaction as soon as it recovers, using the locks it held since Phase 1.
+  - No Rollback: Once the coordinator decides to commit, it cannot change its mind.
+  - Recovery: If a participant was down, it must commit the transaction as soon as it recovers, using the locks it held since Phase 1.
 
 ### Critical Problems with 2PC
 

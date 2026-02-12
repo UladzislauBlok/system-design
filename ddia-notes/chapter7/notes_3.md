@@ -19,7 +19,7 @@ This single-threaded model became feasible around 2007 due to two factors:
 - RAM Availability: Active datasets can often fit entirely in memory, eliminating slow disk I/O.
 - OLTP Nature: Most write transactions are short and fast. (Long-running read-only queries can run separately on a consistent snapshot).
 
-*Encapsulating Transactions in Stored Procedures*
+_Encapsulating Transactions in Stored Procedures_
 
 Traditional interactive transactions (where an application sends queries one by one and waits for responses) are inefficient for single-threaded execution due to network latency. The database would spend most of its time idle, waiting for the next query.
 
@@ -31,13 +31,13 @@ While stored procedures historically had a bad reputation (ugly proprietary lang
 
 Replication: Systems like VoltDB execute the same stored procedure on every replica rather than copying write data. This requires stored procedures to be deterministic (producing the exact same result on every node).
 
-*PartitioningI
+_Partitioning_
 
 To scale beyond a single CPU core, data can be partitioned. If a transaction only reads/writes data within a single partition, it can run on that partition's specific thread independently. This allows throughput to scale linearly with the number of CPU cores.
 
 However, Cross-Partition Transactions are significantly slower because they require coordination across all touched partitions to ensure serializability. Performance drops drastically if the data structure requires frequent cross-partition access (e.g., multiple secondary indexes).
 
-*Summary of Constraints*
+_Summary of Constraints_
 
 Serial execution is a viable implementation of serializability only under specific conditions:
 

@@ -22,7 +22,7 @@ Despite decades of development, networks remain unreliable. Studies and anecdota
 
 - Frequency and Causes: Research indicates frequent faults, such as disconnected machines or entire racks going offline. While redundant gear helps, it does not prevent human error (e.g., misconfigured switches), which is a major cause of outages.
 - Environment Variability: Public clouds (like EC2) are known for transient glitches. Private datacenters are generally more stable but are not immune to issues like faulty software upgrades, physical damage (e.g., sharks biting undersea cables lol), or "one-way" link failures where packets pass successfully in only one direction.
-- Software Responsibility: Software must be designed to handle network faults because communication failures are inevitable. If error handling is not defined and tested, the system may exhibit arbitrary behaviors, such as deadlocks or data deletion. Handling faults does not always require tolerating them seamlessly; showing an error message is a valid response, provided the system can recover. 
+- Software Responsibility: Software must be designed to handle network faults because communication failures are inevitable. If error handling is not defined and tested, the system may exhibit arbitrary behaviors, such as deadlocks or data deletion. Handling faults does not always require tolerating them seamlessly; showing an error message is a valid response, provided the system can recover.
 
 <br>
 
@@ -33,6 +33,7 @@ Despite decades of development, networks remain unreliable. Studies and anecdota
 ### Detecting Faults
 
 Systems often need to automatically detect faulty nodes to take actions like removing a dead node from a load balancer or promoting a new leader in a database. However, network uncertainty makes accurate detection difficult.
+
 - Limited Feedback Signals: In specific cases, some feedback is available. The operating system might send a TCP RST or FIN packet if the process is closed, or a router might return an ICMP Destination Unreachable error. Management interfaces on switches can sometimes report hardware link failures.
 - Unreliability of Feedback: These signals are not guaranteed. For instance, a node might crash while processing a request, leaving the sender unsure of how much data was processed. Furthermore, switch management interfaces may be inaccessible during network problems.
 - Reliance on Timeouts: Rapid feedback is useful but cannot be counted on. Even a TCP acknowledgement only confirms packet delivery, not that the application handled it. Ultimately, the only way to be sure a request succeeded is receiving a positive response from the application. If no response arrives, the system must eventually rely on timeouts to declare a node dead.
