@@ -6,9 +6,13 @@
    - Cloud Computing and Supercomputing
 
 2. Unreliable Networks -> [ref](./notes_2.md)
-    - Network Faults in Practice
-    - Detecting Faults
-    - Timeouts and Unbounded Delays
-    - Synchronous Versus Asynchronous Networks
+   - Network Faults in Practice
+   - Detecting Faults
+   - Timeouts and Unbounded Delays
+   - Synchronous Versus Asynchronous Networks
 
-3. 
+3. Unreliable Clocks -> [ref](./notes_3.md)
+   - Monotonic Versus Time-of-Day Clocks
+   - Clock Synchronization and Accuracy
+   - Relying on Synchronized Clocks
+   - Process Pauses
