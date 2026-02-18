@@ -1,4 +1,4 @@
-# Chapter 8.2 The Trouble with Distributed Systems: Unreliable Clocks
+# Chapter 8.3 The Trouble with Distributed Systems: Unreliable Clocks
 
 Applications rely on clocks to measure durations (e.g., request timeouts, response times) and to identify points in time (e.g., log timestamps, scheduled events). However, in distributed systems, time is problematic because network communication involves variable delays, making it difficult to determine the strict order of events across multiple machines. Additionally, each machine operates on its own hardware clock (usually a quartz crystal oscillator) which is not perfectly accurate and drifts independently. The Network Time Protocol (NTP) is commonly used to synchronize these clocks with external, more accurate sources like GPS.
 

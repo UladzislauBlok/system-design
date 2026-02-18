@@ -16,3 +16,8 @@
    - Clock Synchronization and Accuracy
    - Relying on Synchronized Clocks
    - Process Pauses
+
+4. Knowledge, Truth, and Lies -> [ref](./notes_4.md)
+   - The Truth Is Defined by the Majority
+   - Byzantine Faults
+   - System Model and Reality
