@@ -9,3 +9,5 @@
 5. **CHAPTER 5:** Replication
 6. **CHAPTER 6:** Partitioning
 7. **CHAPTER 7:** Transactions
+8. **CHAPTER 8:** The Trouble with Distributed Systems
+9. **CHAPTER 9:** Consistency and Consensus
