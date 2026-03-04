@@ -75,7 +75,7 @@ Consistent Prefix Reads is a guarantee that if a sequence of writes happens in a
 
 - Write Ordering: If the database applies all writes in a single sequential log, reads will always see a consistent prefix.
 - Causal Partitioning: A common solution is to ensure that all causally related writes are sent to the same partition. However, this can be difficult to implement efficiently in complex data models.
-- Dependency Tracking: Some advanced algorithms explicitly track causal dependencies to ensure the correct order is maintained during reads. -> [ref](TODO)
+- Dependency Tracking: Some advanced algorithms explicitly track causal dependencies to ensure the correct order is maintained during reads. -> [ref](./notes_4.md#detecting-concurrent-writes)
 
 <br>
 
