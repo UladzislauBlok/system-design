@@ -4,9 +4,9 @@
 
 1. Linearizability -> [ref](./notes_1.md)
    - What Makes a System Linearizable?
-   - Relying on Linearizability 330
-   - Implementing Linearizable Systems 332
-   - The Cost of Linearizability 335
+   - Relying on Linearizability
+   - Implementing Linearizable Systems
+   - The Cost of Linearizability
 
 2. Ordering Guarantees -> [ref](./notes_2.md)
    - Ordering and Causality
