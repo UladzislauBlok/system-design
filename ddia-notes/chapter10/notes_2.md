@@ -202,3 +202,59 @@ MapReduce follows the same Unix philosophy: inputs are immutable, previous outpu
 - **Separation of logic and wiring**: Like Unix tools, MapReduce jobs separate processing logic from I/O configuration, enabling code reuse across teams.
 
 These Unix design principles work well for Hadoop, with one key difference: Unix tools assume untyped text files and require extensive parsing, while Hadoop eliminates this overhead by using structured file formats like Avro and Parquet, which provide efficient schema-based encoding with schema evolution. -> [ref](../chapter4/notes_1.md)
+
+<br>
+
+---
+
+<br>
+
+### Comparing Hadoop to Distributed Databases
+
+Hadoop resembles a distributed Unix: HDFS is the filesystem and MapReduce is a quirky process that always sorts between the map and reduce phases. The join and grouping algorithms discussed earlier were not new — **massively parallel processing (MPP)** databases such as Gamma, Teradata, and Tandem NonStop SQL had implemented them over a decade before the MapReduce paper was published.
+
+The key difference: MPP databases focus on parallel execution of analytic SQL queries on a cluster, while MapReduce plus a distributed filesystem provides something closer to a general-purpose operating system capable of running arbitrary programs.
+
+**Diversity of Storage**
+
+Databases require data to be structured according to a particular model (relational, document, etc.), whereas files in a distributed filesystem are just byte sequences — they can hold database records, text, images, videos, sensor readings, sparse matrices, feature vectors, or genome sequences.
+
+Hadoop opened up the possibility of dumping data into HDFS first and figuring out how to process it later. By contrast, MPP databases require careful up-front modeling of data and query patterns before import. In practice, making data available quickly — even in a raw, difficult-to-use format — is often more valuable than deciding on the ideal data model up front.
+
+This is similar to data warehousing: bringing data from various parts of a large organization together in one place enables joins across previously disparate datasets. The careful schema design required by MPP databases slows down centralized data collection; collecting raw data first and worrying about schema later speeds things up — a concept known as a **data lake** (or “enterprise data hub”).
+
+This shifts the burden of interpretation from producer to consumer — a **schema-on-read** approach. When producers and consumers are different teams with different priorities, this is an advantage. There may not be one ideal data model; raw data allows several transformations for different purposes (the “sushi principle”: raw data is better). -> [ref](../chapter2/notes_1.md)
+
+Hadoop has therefore been widely used for ETL: data from transaction processing systems is dumped into the distributed filesystem in raw form, then MapReduce jobs clean, transform, and import it into an MPP data warehouse for analytics. Data modeling still happens, but in a separate step decoupled from data collection — possible because a distributed filesystem supports data in any format.
+
+**Diversity of Processing Models**
+
+MPP databases are monolithic, tightly integrated systems that handle storage layout, query planning, scheduling, and execution. Because all components are tuned together, they achieve excellent performance on their target queries. SQL provides expressive, code-free semantics accessible to business analysts via tools like Tableau.
+
+However, not all processing can be expressed as SQL. Machine learning, recommendation systems, full-text search indexes with relevance ranking, and image analysis all require a more general data processing model. These workloads are often application-specific (feature engineering, natural language models, fraud-detection risk functions) and inevitably require writing code, not just queries.
+
+MapReduce gave engineers the ability to run their own code over large datasets. You can build a SQL engine on top of HDFS and MapReduce — this is exactly what Hive did — but you can also write batch processes that do not lend themselves to SQL at all.
+
+Over time, MapReduce proved too limiting for some workloads, and various other processing models were developed on top of Hadoop. Due to the openness of the Hadoop platform, implementing a whole range of approaches was feasible — something not possible within a monolithic MPP database. Crucially, all these processing models run on a single shared-use cluster accessing the same distributed filesystem. There is no need to import data into several specialized systems; the platform supports diverse workloads without moving data around, making it easier to derive value and experiment with new models.
+
+The Hadoop ecosystem includes both random-access OLTP databases such as HBase and MPP-style analytic databases such as Impala. Neither uses MapReduce, but both use HDFS for storage — very different approaches to data access that coexist in the same system. -> [ref](../chapter3/notes_1.md)
+
+**Designing for Frequent Faults**
+
+Two more differences between MapReduce and MPP databases stand out: fault handling and use of memory vs. disk.
+
+If a node crashes during a query, most MPP databases abort the entire query and either let the user resubmit it or automatically rerun it. Since queries typically run for seconds or minutes, this is acceptable — the retry cost is low. MPP databases also prefer to keep data in memory (e.g., hash joins) to avoid disk reads.
+
+MapReduce takes the opposite approach: it tolerates failure of individual map or reduce tasks by retrying them independently, without affecting the job as a whole. It eagerly writes data to disk, partly for fault tolerance, partly assuming the dataset is too large for memory. This is more appropriate for large, long-running jobs where at least one task failure is likely — rerunning the entire job for a single failure would be wasteful. Even if per-task recovery adds overhead to fault-free processing, it is a reasonable trade-off when task failures are frequent enough.
+
+But are these assumptions realistic? In most clusters, machine failures occur but are rare enough that most jobs complete without encountering one.
+
+The answer lies in the environment MapReduce was originally designed for. Google runs mixed-use datacenters where online production services and offline batch jobs share the same machines. Every task has a resource allocation (CPU, RAM, disk) enforced via containers and a priority level — higher-priority tasks cost more, and if they need resources, lower-priority tasks on the same machine are **preempted** (terminated to free resources).
+
+This architecture allows low-priority computing resources to be overcommitted, since the system can reclaim them as needed. Overcommitting improves machine utilization compared to segregating production and non-production workloads. However, MapReduce jobs run at low priority and risk preemption at any time — batch jobs effectively “pick up the scraps under the table,” using whatever resources remain after high-priority processes take what they need.
+
+At Google, a MapReduce task running for one hour has roughly a 5% chance of being preempted — over an order of magnitude higher than hardware failure rates. For a job with 100 tasks each running 10 minutes, there is a greater than 50% chance that at least one task will be preempted before completion.
+
+This is the real reason MapReduce tolerates frequent unexpected task termination: not because hardware is unreliable, but because the freedom to arbitrarily preempt processes enables better resource utilization across the cluster.
+
+_Note: Among open source schedulers, preemption is less widely used. YARN’s CapacityScheduler supports it for balancing queue resource allocation, but general priority preemption is not broadly supported. In environments where tasks are rarely preempted, MapReduce’s design trade-offs make less sense._
