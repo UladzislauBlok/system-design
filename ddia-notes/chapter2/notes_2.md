@@ -1,6 +1,6 @@
 # Chapter 2.2 Relational Model Versus Document Model: Query Languages for Data
 
-The introduction of SQL and the relational model brought a shift from imperative to declarative querying. Imperative languages require specifying the exact sequence of steps (how) to retrieve data, much like stepping through code line by line. Conversely, a declarative language like SQL only requires you to specify the desired data pattern (what) you want, leaving the database's query optimizer to independently determine the most efficient execution plan (indexes, join order, etc.).
+The introduction of SQL and the relational model brought a shift from imperative to declarative querying. **Imperative languages** require specifying the exact sequence of steps (how) to retrieve data, much like stepping through code line by line. Conversely, a **declarative language** like SQL only requires you to specify the desired data pattern (what) you want, leaving the database's query optimizer to independently determine the most efficient execution plan (indexes, join order, etc.).
 
 This declarative approach is beneficial because it is more concise and, more importantly, it allows the database system to perform automatic optimizations and implement parallel execution freely, without breaking queries. Since the user doesn't dictate the algorithm, the database can safely update its internal methods for better performance without requiring changes to the application code.
 
@@ -12,9 +12,9 @@ This declarative approach is beneficial because it is more concise and, more imp
 
 ### MapReduce Querying
 
-MapReduce is a programming model, popularized by Google, for processing large datasets in bulk across many machines. Some NoSQL databases, like MongoDB and CouchDB, support a limited version of MapReduce for read-only queries.
+**MapReduce** is a programming model, popularized by Google, for processing large datasets in bulk across many machines. Some NoSQL databases, like MongoDB and CouchDB, support a limited version of MapReduce for read-only queries.
 
-MapReduce is an intermediate approach between declarative query languages and imperative APIs, where query logic is expressed using repeatable code snippets based on the map (or collect) and reduce (or fold) functional programming concepts.i
+MapReduce is an intermediate approach between declarative query languages and imperative APIs, where query logic is expressed using repeatable code snippets based on the **map** (or collect) and **reduce** (or fold) functional programming concepts.
 
 **PostgreSQL (Declarative SQL)**
 
@@ -77,27 +77,27 @@ The MapReduce process is illustrated by the example:
 - Map runs once per document: emit("1995-12", 3) and emit("1995-12", 4).
 - Reduce runs on the grouped data: reduce("1995-12", [3, 4]), returning 7.
 
-##### Purity and Execution
+**Purity and Execution**
 
-The map and reduce functions must be pure functions:
+The map and reduce functions must be **pure functions**:
 
 - They only use their input data.
 - They cannot perform additional database queries or have side effects.
 
 This restriction allows the database to run the functions anywhere, in any order, and retry them on failure. Despite the constraints, they can perform complex tasks like parsing and calculations.
 
-##### Context and Usability
+<br>
+
+**Context and Usability**
 
 - MapReduce is a low-level programming model for distributed execution, but it's not the only one; many distributed SQL implementations exist that don't use MapReduce.
 - The ability to embed code (like JavaScript) in a query is powerful but not unique to MapReduce; some SQL databases offer similar extensions.
 - Usability Issue: Writing two coordinated JavaScript functions (map and reduce) is often harder than writing a single declarative query, and it offers fewer opportunities for query optimization.
 
-To address the usability and optimization issues of MapReduce, MongoDB introduced the Aggregation Pipeline (in version 2.2), a declarative query language.
-
-The shark-counting query in this pipeline looks like this:
+To address the usability and optimization issues of MapReduce, MongoDB introduced the **Aggregation Pipeline** (in version 2.2), a declarative query language based on JSON syntax.
 
 ```
-b.observations.aggregate([
+db.observations.aggregate([
     { $match: { family: "Sharks" } },
     { $group: {
         _id: {
@@ -109,4 +109,6 @@ b.observations.aggregate([
 ]);
 ```
 
-The aggregation pipeline is similar to a subset of SQL in expressiveness but uses a JSON-based syntax. This shows that NoSQL systems sometimes find themselves reinventing SQL concepts, even if the syntax is different.
+The aggregation pipeline shows that NoSQL systems sometimes find themselves reinventing SQL concepts, even if the syntax is different.
+
+<br>
