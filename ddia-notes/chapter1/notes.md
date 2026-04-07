@@ -29,8 +29,6 @@ These fault-tolerant systems offer significant operational benefits:
 - They avoid the planned downtime required by single-server systems for tasks like OS security patching.
 - They allow patching to be done one node at a time without interrupting the service of the entire system.
 
-<br>
-
 **Software Errors**
 
 Unlike hardware faults, which are typically random and independent (e.g., one disk failure), **systematic faults** are correlated across multiple nodes, making them harder to anticipate and resulting in more widespread system failures.
@@ -49,8 +47,6 @@ Since there is no single solution, addressing systematic faults requires multipl
 - Designing processes to crash and restart gracefully.
 - Extensive monitoring and analysis of system behavior in production.
 - Self-checking mechanisms to constantly verify system invariants (e.g., input equals output) and alert on discrepancies.
-
-<br>
 
 **Human Errors**
 
@@ -74,8 +70,6 @@ To make systems reliable despite human fallibility, the best approach is to comb
 ### Scalability
 
 **Scalability** is the term we use to describe a system’s ability to cope with increased load. Note, however, that it is not a one-dimensional label that we can attach to a system: it is meaningless to say “X is scalable” or “Y doesn’t scale.” Rather, discussing scalability means considering questions like “If the system grows in a particular way, what are our options for coping with the growth?” and “How can we add computing resources to handle the additional load?”
-
-<br>
 
 **Describing Load**
 
@@ -107,8 +101,6 @@ Twitter now uses a hybrid approach combining both methods for better performance
 
 - Most Users: Tweets are fanned out immediately using Approach 2.
 - Users with huge fan-out (Celebrities): Their tweets are excluded from fan-out and are instead fetched separately and merged with the home timeline at read time (Approach 1).
-
-<br>
 
 **Describing Performance**
 
@@ -144,8 +136,6 @@ Queueing often dominates high-percentile response times (tail latencies). A smal
 
 When testing system scalability, the load generator must send requests independently of the response time to accurately simulate real-world queueing behavior.
 
-<br>
-
 **Approaches for Coping with Load**
 
 Scalability addresses how to maintain good performance when load parameters increase. As load grows by an order of magnitude, the underlying architecture often needs to be rethought.
@@ -177,8 +167,6 @@ We can and should design software in such a way that it will hopefully minimize 
 
 As previously with reliability and scalability, there are no easy solutions for achieving these goals. Rather, we will try to think about systems with operability, simplicity, and evolvability in mind.
 
-<br>
-
 **Operability: Making Life Easy for Operations**
 
 Operations teams are vital to keeping a software system running smoothly. A good operations team typically is responsible for the following, and more:
@@ -203,8 +191,6 @@ Good operability means making routine tasks easy, allowing the operations team t
 - Providing good default behavior, but also giving administrators the freedom to override defaults when needed
 - Self-healing where appropriate, but also giving administrators manual control over the system state when needed
 - Exhibiting predictable behavior, minimizing surprises
-
-<br>
 
 **Simplicity: Managing Complexity**
 
@@ -233,8 +219,6 @@ Examples of Abstraction:
 
 Finding good abstractions, especially in complex fields like distributed systems, is challenging but crucial for managing complexity.
 
-<br>
-
 **Evolvability: Making Change Easy**
 
 It's highly unlikely that a system's requirements will remain static; they are constantly changing due to new facts, emerging use cases, shifting business priorities, user requests, regulatory changes, and system growth.
@@ -242,5 +226,3 @@ It's highly unlikely that a system's requirements will remain static; they are c
 The ease with which a data system can be modified to adapt to changing requirements is tied to its simplicity and the quality of its abstractions.
 
 For a large data system, which may comprise several different applications or services, the concept of agility is referred to as **evolvability**. This term emphasizes the ability of the overall system architecture to accommodate frequent and substantial change.
-
-<br>
