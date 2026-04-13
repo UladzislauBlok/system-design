@@ -1,6 +1,6 @@
 # Chapter 11.2 Stream Processing: Databases and Streams
 
-Many data systems need to be kept in sync, such as keeping a search index or a cache updated with changes from a relational database. Streams offer a powerful way to manage these relationships
+Many data systems need to be kept in sync, such as keeping a search index or a cache updated with changes from a relational database. Streams offer a powerful way to manage these relationships.
 
 <br>
 
