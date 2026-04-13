@@ -12,3 +12,4 @@
 8. **CHAPTER 8:** The Trouble with Distributed Systems
 9. **CHAPTER 9:** Consistency and Consensus
 10. **CHAPTER 10:** Batch Processing
+11. **CHAPTER 11:** Stream Processing
