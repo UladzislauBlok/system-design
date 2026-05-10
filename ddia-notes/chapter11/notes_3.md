@@ -98,7 +98,7 @@ Processing can be delayed by queueing, network faults, performance contention, o
 
 These delays cause unpredictable message ordering (e.g., an event occurring later may reach the broker earlier). Relying on processing time instead of the event's actual timestamp (**event time**) leads to bad data. For example, processing a backlog of delayed events based on processing time might falsely indicate an anomalous spike in activity.
 
-%image 1%
+![processing_time_artifact](./images/processing_time_artifact.png)
 
 **Handling straggler events**
 
@@ -165,6 +165,16 @@ Unlike a stream-stream join, the table's "window" conceptually reaches back to t
 Consider maintaining a social network timeline cache. Iterating over all followees to merge recent posts on read is too expensive. Instead, a stream processor can maintain a per-user "inbox" as posts arrive.
 
 This requires streams for posts (sending/deleting) and follow relationships (following/unfollowing). The stream processor maintains a **materialized view** corresponding to a query that joins two tables (`posts` and `follows`). The timelines are effectively a cache of this query result, continuously updated as the underlying tables change.
+
+Another way of looking at this stream process is that it maintains a materialized view for a query that joins two tables (`posts` and `follows`) — something like the following:
+
+```
+SELECT follows.follower_id AS timeline_id,
+  array_agg(posts.* ORDER BY posts.timestamp DESC)
+FROM posts
+JOIN follows ON follows.followee_id = posts.sender_id
+GROUP BY follows.follower_id
+```
 
 **Time dependence of joins**
 
